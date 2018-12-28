@@ -1,10 +1,10 @@
 #include "A_star.h"
-#define INF 999999999999
+#define INF 999999999
 
-QString A_star(QString startStatus,unsigned int len,unsigned int N){
+vector<QString> A_star(QString startStatus,unsigned int len,unsigned int N){
 
     QString targetStatus;
-    QString path;
+   // vector<QString> path;
 
     //target status
     for(unsigned int i=0; i < len;i++){
@@ -15,14 +15,12 @@ QString A_star(QString startStatus,unsigned int len,unsigned int N){
     vector<NODE> closeList;
 
     NODE startPoint;
-    startPoint.father = NULL;
-    startPoint.estimateCost = computeManhattanDistance(startStatus,N,len);
+    startPoint.path.push_back(startStatus);
+    startPoint.estimateCost = INF;
     startPoint.knownCost = 0 ;
     startPoint.key = startStatus;
 
     openList.push_back(startPoint);
-
-    unsigned int currentMinCost = startPoint.knownCost + startPoint.estimateCost;
 
     do{
 
@@ -40,56 +38,69 @@ QString A_star(QString startStatus,unsigned int len,unsigned int N){
 
         //remove current node and put it in closed list
         closeList.push_back(openList[cur]);
-        NODE curNode = openList[cur];
+        NODE curNode;
+        nodeDeepCopy(&curNode,&openList[cur]);
+        //memcpy(&curNode, &openList[cur], sizeof(NODE));//deep copy就用这么一句就搞定了，呵呵
         openList.erase(openList.begin()+cur);
 
         //find neighbor
-        vector<QString> neighborStr = findNeighbors(openList[cur].key,len, N);
+        vector<QString> neighborStr = findNeighbors(curNode.key,len, N);
 
         for(unsigned int i=0; i < neighborStr.size();i++){
+            if(isInList(neighborStr[i],closeList))
+                continue;
 
             if(!isInList(neighborStr[i],openList)){
                 NODE neighborNode;
                 neighborNode.key = neighborStr[i];
-                neighborNode.path.push_back(curNode);
+                neighborNode.path.clear();
+                neighborNode.path.assign(curNode.path.begin(), curNode.path.end());//将v2赋值给v1 但会清除掉v1以前的内容
+                neighborNode.path.push_back(neighborStr[i]);
                 neighborNode.estimateCost = computeManhattanDistance(neighborStr[i],N,len);
                 neighborNode.knownCost = curNode.knownCost + 1 ;
                 openList.push_back(neighborNode);
             }
             if(isInList(neighborStr[i],openList)){
-                for(unsigned int inx=0; inx < openList.size();inx++){
-                    if(neighborStr[inx]==openList[inx].key)
+                unsigned int inx;
+                for(inx=0; inx < openList.size();inx++){
+                    if(neighborStr[i]==openList[inx].key)
                         break;
                 }
-                if(openList[inx].knownCost+ openList[inx].estimateCost < currentMinCost){
-                    openList[inx].path
+
+                //current known path is short, so change previous path
+                if(openList[inx].knownCost > curNode.knownCost){
+                    openList[inx].path.clear();
+                    openList[inx].path.assign(curNode.path.begin(), curNode.path.end());
+                    openList[inx].path.push_back(neighborStr[i]);
+                    openList[inx].estimateCost = computeManhattanDistance(openList[inx].key,N,len);
+                    openList[inx].knownCost = curNode.knownCost + 1;
 
                 }
             }
 
         }
 
+    }while(!isInList(targetStatus,openList));
+    unsigned int i;
+    for(i=0; i < openList.size();i++){
+        if(targetStatus==openList[i].key)
+            break;
+    }
 
-
-
-    }while();
-
-
-
-    return path;
+    return openList[i].path;
 }
 
 unsigned int computeManhattanDistance(QString startStatus,unsigned int N,unsigned int len){
 
     unsigned int estimateCost = 0;
     for(unsigned int i = 0;int(i) < startStatus.length();i++){
-        if(startStatus == QString::number(len - 1) )
+        if(startStatus.mid(i,1) == QString::number(len - 1) )
             continue;
-        estimateCost += labs((startStatus.mid(i,1)).toInt()/N - i/N) +
-                labs(startStatus.mid(i,1).toInt()%N - i%N);
+        estimateCost += abs(int(startStatus.mid(i,1).toInt()/N - i/N))
+                +abs(int(startStatus.mid(i,1).toInt()%N - i%N));
 
     }
-    return 5*estimateCost;
+    return 2*estimateCost;
 
 }
 
@@ -108,12 +119,12 @@ vector<QString> findNeighbors(QString status, unsigned int len,unsigned int N){
         //left
         neighbors.push_back(exchange(status,row*N+col-1,pos));
         //right
-        neighbors.push_back(exchange(status,row+*N+col+1,pos));
+        neighbors.push_back(exchange(status,row*N+col+1,pos));
     }
 
     else if(row == 0 && col == 0){
         //right
-        neighbors.push_back(exchange(status,row+*N+col+1,pos));
+        neighbors.push_back(exchange(status,row*N+col+1,pos));
 
         //down
         neighbors.push_back(exchange(status,(row+1)*N+col,pos));
@@ -133,7 +144,7 @@ vector<QString> findNeighbors(QString status, unsigned int len,unsigned int N){
         //up
         neighbors.push_back(exchange(status,(row-1)*N+col,pos));
         //right
-        neighbors.push_back(exchange(status,row+*N+col+1,pos));
+        neighbors.push_back(exchange(status,row*N+col+1,pos));
     }
     else if(row == len/N -1 && col == N-1){
         //up
@@ -149,7 +160,7 @@ vector<QString> findNeighbors(QString status, unsigned int len,unsigned int N){
         //left
         neighbors.push_back(exchange(status,row*N+col-1,pos));
         //right
-        neighbors.push_back(exchange(status,row+*N+col+1,pos));
+        neighbors.push_back(exchange(status,row*N+col+1,pos));
     }
     else if(row == len/N -1 && col > 0 && col < N-1){
         //up
@@ -157,7 +168,7 @@ vector<QString> findNeighbors(QString status, unsigned int len,unsigned int N){
         //left
         neighbors.push_back(exchange(status,row*N+col-1,pos));
         //right
-        neighbors.push_back(exchange(status,row+*N+col+1,pos));
+        neighbors.push_back(exchange(status,row*N+col+1,pos));
     }
     else if(row > 0 && row < len/N -1 && col ==0){
         //up
@@ -165,7 +176,7 @@ vector<QString> findNeighbors(QString status, unsigned int len,unsigned int N){
         //down
         neighbors.push_back(exchange(status,(row+1)*N+col,pos));
         //right
-        neighbors.push_back(exchange(status,row+*N+col+1,pos));
+        neighbors.push_back(exchange(status,row*N+col+1,pos));
     }
     else if(row > 0 && row < len/N -1 && col == N-1){
         //up
@@ -185,23 +196,34 @@ QString exchange(QString str,unsigned int x,unsigned int y){
     QString tmp;
 
     tmp = str.mid(x,1);
-    str.mid(x,1) = str.mid(y,1);
-    str.mid(pos,1) = tmp;
+    str.replace(x,1,str.mid(y,1));
+    str.replace(y,1,tmp);
+    str.mid(y,1) = tmp;
 
     return str;
 
 }
 
 bool isInList(QString str,vector<NODE> list){
-
+    bool flag = false;
     for(unsigned int i=0; i < list.size();i++){
-        if(str==list[i].key)
+        if(str==list[i].key){
+            flag = true;
             break;
+            }
     }
-    if(str.isEmpty())
-        return false;
-    else
-        return true;
+    return flag;
 
+
+}
+
+void nodeDeepCopy(NODE* dst,NODE* src){
+    dst->estimateCost = src->estimateCost;
+    dst->knownCost = src->knownCost;
+    dst->key = src->key;
+    for(unsigned int i= 0; i < src->path.size();i++){
+        dst->path.push_back(src->path[i]);
+
+    }
 }
 

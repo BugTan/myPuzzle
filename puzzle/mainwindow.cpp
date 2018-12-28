@@ -7,8 +7,10 @@
 #include <QImageWriter>
 #include <math.h>
 #include <QInputDialog>
-//#include "A_star.h"
-#include <QElapsedTimer>
+#include "A_star.h"
+
+#include <QTime>
+
 
 #define FULL_W 180*4
 #define FULL_H 160*4
@@ -158,39 +160,23 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
 
         //demonstrate the game
         case Qt::Key_F:{
-//            QString status;
-//            for(unsigned int i= 0; i < totalPatch; i++){
-//                status += QString::number(pCompare[i/N][i%N]);
-//            }
-//            QString path = A_star(status,totalPatch,N);
-//            for(int i= 0; i < path.length(); i++){
-//                switch(path.mid(i,1)){
-//                case 'W':{
-//                    tmp = pCompare[row][col];
-//                    pCompare[row][col] = pCompare[row+1][col];
-//                    pCompare[row+1][col]=tmp;
-//                }break;
-//                case 'S':{
-//                    tmp = pCompare[row][col];
-//                    pCompare[row][col] = pCompare[row-1][col];
-//                    pCompare[row-1][col]=tmp;
-//                }break;
-//                case 'A':{
-//                    tmp = pCompare[row][col];
-//                    pCompare[row][col]=pCompare[row][col+1];
-//                    pCompare[row][col+1]=tmp;
-//                }break;
-//                case 'D':{
-//                    tmp = pCompare[row][col];
-//                    pCompare[row][col]=pCompare[row][col+1];
-//                    pCompare[row][col+1]=tmp;
-//                }break;
-
-//                }
-//                QElapsedTimer t;
-//                t.start();
-//                while(t.elapsed()<1000);
-//            }
+            QString status;
+            for(unsigned int i= 0; i < totalPatch; i++){
+                status += QString::number(pCompare[i/N][i%N]);
+            }
+            vector<QString> path = A_star(status,totalPatch,N);
+//            vector<QString> path;
+//            path.push_back("1302");
+//            path.push_back("3102");
+//            path.push_back("0132");
+//            path.push_back("0123");
+            for(unsigned int i= 0; i < path.size(); i++){
+                for(int j =0; j< path[i].length();j++){
+                    pCompare[j/N][j%N] = path[i].mid(j,1).toInt();
+                }
+                moveImage();
+                delay(1);
+            }
         }break;
 
         //save current image
@@ -291,6 +277,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
         QMessageBox msgBox;
           msgBox.setText("You are so great!");
           msgBox.exec();
+          this->close();
 
     }
 
@@ -444,7 +431,20 @@ bool MainWindow::isSolvable()
     return Curflag % 2 == flag;
 }
 
+void MainWindow::delaymsec(int msec){
+    QTime n=QTime::currentTime();
+    QTime now;
 
+    do{
+      now=QTime::currentTime();
+    }while (n.msecsTo(now)<=msec);
+}
+
+void MainWindow::delay(unsigned int n){
+    QTime dieTime= QTime::currentTime().addSecs(n);
+    while (QTime::currentTime() < dieTime)
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+}
 
 MainWindow::~MainWindow()
 {

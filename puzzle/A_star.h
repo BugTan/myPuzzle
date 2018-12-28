@@ -8,17 +8,21 @@
 
 using namespace std;
 
-typedef struct Node{
-    Node* father;
+typedef struct {
+    vector<QString> path;
     unsigned int estimateCost;
     unsigned int knownCost;
     QString key;
 
+
+
 }NODE;
 
-QString A_star(QString startStatus,unsigned int len,unsigned int N);
+vector<QString> A_star(QString startStatus,unsigned int len,unsigned int N);
 unsigned int computeManhattanDistance(QString startStatus,unsigned int N,unsigned int len);
 QString exchange(QString str,unsigned int x,unsigned int y);
 bool isInList(QString str,vector<NODE> list);
+vector<QString> findNeighbors(QString status, unsigned int len,unsigned int N);
+void nodeDeepCopy(NODE* dst,NODE* src);
 
 #endif // A_STAR_H
