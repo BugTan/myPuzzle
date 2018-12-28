@@ -8,21 +8,25 @@
 
 using namespace std;
 
+typedef struct{
+    QString value;
+    QString lenDescription;
+
+}DYNAMICSTR;
+
 typedef struct {
-    vector<QString> path;
+    vector<DYNAMICSTR> path;
     unsigned int estimateCost;
     unsigned int knownCost;
-    QString key;
-
-
-
+    DYNAMICSTR key;
 }NODE;
 
-vector<QString> A_star(QString startStatus,unsigned int len,unsigned int N);
-unsigned int computeManhattanDistance(QString startStatus,unsigned int N,unsigned int len);
-QString exchange(QString str,unsigned int x,unsigned int y);
-bool isInList(QString str,vector<NODE> list);
-vector<QString> findNeighbors(QString status, unsigned int len,unsigned int N);
+vector<DYNAMICSTR> A_star(DYNAMICSTR startStatus,unsigned int len,unsigned int N);
+unsigned int computeManhattanDistance(DYNAMICSTR startStatus,unsigned int N,unsigned int len);
+DYNAMICSTR exchange(DYNAMICSTR str,unsigned int x,unsigned int y,unsigned int len);
+bool isInList(DYNAMICSTR str,vector<NODE> list);
+vector<DYNAMICSTR> findNeighbors(DYNAMICSTR status, unsigned int len,unsigned int N);
 void nodeDeepCopy(NODE* dst,NODE* src);
-
+void dynamicStrDeepCopy(DYNAMICSTR* dst,DYNAMICSTR* src);
+unsigned int readDynamicStrValue(DYNAMICSTR status,unsigned int readPos);
 #endif // A_STAR_H

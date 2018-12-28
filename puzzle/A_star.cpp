@@ -1,14 +1,15 @@
 #include "A_star.h"
 #define INF 999999999
 
-vector<QString> A_star(QString startStatus,unsigned int len,unsigned int N){
+vector<DYNAMICSTR> A_star(DYNAMICSTR startStatus,unsigned int len,unsigned int N){
 
-    QString targetStatus;
+    DYNAMICSTR targetStatus;
    // vector<QString> path;
 
     //target status
     for(unsigned int i=0; i < len;i++){
-        targetStatus += QString::number(i);
+            targetStatus.value += QString::number(i);
+            targetStatus.lenDescription += QString::number(QString::number(i).length());
     }
 
     vector<NODE> openList;
@@ -18,13 +19,12 @@ vector<QString> A_star(QString startStatus,unsigned int len,unsigned int N){
     startPoint.path.push_back(startStatus);
     startPoint.estimateCost = INF;
     startPoint.knownCost = 0 ;
-    startPoint.key = startStatus;
+    //startPoint.key = startStatus;
+    dynamicStrDeepCopy(&startPoint.key,&startStatus);
 
     openList.push_back(startPoint);
 
     do{
-
-
         //find the node with min F value in openlist
         int FValue = INF,tmp;
         int cur=0;
@@ -44,26 +44,15 @@ vector<QString> A_star(QString startStatus,unsigned int len,unsigned int N){
         openList.erase(openList.begin()+cur);
 
         //find neighbor
-        vector<QString> neighborStr = findNeighbors(curNode.key,len, N);
+        vector<DYNAMICSTR> neighborStr = findNeighbors(curNode.key,len, N);
 
         for(unsigned int i=0; i < neighborStr.size();i++){
             if(isInList(neighborStr[i],closeList))
                 continue;
-
-            if(!isInList(neighborStr[i],openList)){
-                NODE neighborNode;
-                neighborNode.key = neighborStr[i];
-                neighborNode.path.clear();
-                neighborNode.path.assign(curNode.path.begin(), curNode.path.end());//将v2赋值给v1 但会清除掉v1以前的内容
-                neighborNode.path.push_back(neighborStr[i]);
-                neighborNode.estimateCost = computeManhattanDistance(neighborStr[i],N,len);
-                neighborNode.knownCost = curNode.knownCost + 1 ;
-                openList.push_back(neighborNode);
-            }
             if(isInList(neighborStr[i],openList)){
                 unsigned int inx;
                 for(inx=0; inx < openList.size();inx++){
-                    if(neighborStr[i]==openList[inx].key)
+                    if(neighborStr[i].value==openList[inx].key.value)
                         break;
                 }
 
@@ -77,114 +66,131 @@ vector<QString> A_star(QString startStatus,unsigned int len,unsigned int N){
 
                 }
             }
+            if(!isInList(neighborStr[i],openList)){
+                NODE neighborNode;
+                //neighborNode.key = neighborStr[i];
+                dynamicStrDeepCopy(&neighborNode.key,&neighborStr[i]);
+                neighborNode.path.clear();
+                neighborNode.path.assign(curNode.path.begin(), curNode.path.end());//将v2赋值给v1 但会清除掉v1以前的内容
+                neighborNode.path.push_back(neighborStr[i]);
+                neighborNode.estimateCost = computeManhattanDistance(neighborStr[i],N,len);
+                neighborNode.knownCost = curNode.knownCost + 1 ;
+                openList.push_back(neighborNode);
+            }
 
         }
 
     }while(!isInList(targetStatus,openList));
     unsigned int i;
     for(i=0; i < openList.size();i++){
-        if(targetStatus==openList[i].key)
+        if(targetStatus.value==openList[i].key.value)
             break;
     }
 
     return openList[i].path;
 }
 
-unsigned int computeManhattanDistance(QString startStatus,unsigned int N,unsigned int len){
+unsigned int computeManhattanDistance(DYNAMICSTR startStatus,unsigned int N,unsigned int len){
 
     unsigned int estimateCost = 0;
-    for(unsigned int i = 0;int(i) < startStatus.length();i++){
-        if(startStatus.mid(i,1) == QString::number(len - 1) )
+    for(unsigned int i = 0;i < len;i++){
+        if(readDynamicStrValue(startStatus,i) == QString::number(len - 1) )
             continue;
-        estimateCost += abs(int(startStatus.mid(i,1).toInt()/N - i/N))
-                +abs(int(startStatus.mid(i,1).toInt()%N - i%N));
+        estimateCost += abs(int(readDynamicStrValue(startStatus,i)/N - i/N))
+                +abs(int(readDynamicStrValue(startStatus,i)%N - i%N));
 
     }
-    return 2*estimateCost;
+    return 5*estimateCost;
 
 }
 
-vector<QString> findNeighbors(QString status, unsigned int len,unsigned int N){
-    vector<QString> neighbors;
+vector<DYNAMICSTR> findNeighbors(DYNAMICSTR status, unsigned int len,unsigned int N){
+    vector<DYNAMICSTR> neighbors;
 
-    unsigned int pos = status.indexOf(QString::number(len-1));
+  //  unsigned int pos = status.indexOf(QString::number(len-1));
+    unsigned int i;
+    for(i=0; i < len;i++ ){
+        if(QString::number(readDynamicStrValue(status,i)) == QString::number(len-1))
+            break;
+    }
+    unsigned int pos = i;
     unsigned int row = pos/N;
     unsigned int col = pos%N;
 
     if(row > 0 && row < len/N -1 && col > 0 && col < N-1){
         //up
-        neighbors.push_back(exchange(status,(row-1)*N+col,pos));
+        neighbors.push_back(exchange(status,(row-1)*N+col,pos,len));
         //down
-        neighbors.push_back(exchange(status,(row+1)*N+col,pos));
+        neighbors.push_back(exchange(status,(row+1)*N+col,pos,len));
         //left
-        neighbors.push_back(exchange(status,row*N+col-1,pos));
+        neighbors.push_back(exchange(status,row*N+col-1,pos,len));
         //right
-        neighbors.push_back(exchange(status,row*N+col+1,pos));
+        neighbors.push_back(exchange(status,row*N+col+1,pos,len));
     }
 
     else if(row == 0 && col == 0){
         //right
-        neighbors.push_back(exchange(status,row*N+col+1,pos));
+        neighbors.push_back(exchange(status,row*N+col+1,pos,len));
 
         //down
-        neighbors.push_back(exchange(status,(row+1)*N+col,pos));
+        neighbors.push_back(exchange(status,(row+1)*N+col,pos,len));
 
     }
 
     else if(row == 0 && col == N-1){
         //left
-        neighbors.push_back(exchange(status,row*N+col-1,pos));
+        neighbors.push_back(exchange(status,row*N+col-1,pos,len));
 
         //down
-        neighbors.push_back(exchange(status,(row+1)*N+col,pos));
+        neighbors.push_back(exchange(status,(row+1)*N+col,pos,len));
 
     }
 
     else if(row == len/N -1 && col == 0){
         //up
-        neighbors.push_back(exchange(status,(row-1)*N+col,pos));
+        neighbors.push_back(exchange(status,(row-1)*N+col,pos,len));
         //right
-        neighbors.push_back(exchange(status,row*N+col+1,pos));
+        neighbors.push_back(exchange(status,row*N+col+1,pos,len));
     }
     else if(row == len/N -1 && col == N-1){
         //up
-        neighbors.push_back(exchange(status,(row-1)*N+col,pos));
+        neighbors.push_back(exchange(status,(row-1)*N+col,pos,len));
         //left
-        neighbors.push_back(exchange(status,row*N+col-1,pos));
+        neighbors.push_back(exchange(status,row*N+col-1,pos,len));
     }
 
 
     else if(row == 0 && col > 0 && col < N-1){
         //down
-        neighbors.push_back(exchange(status,(row+1)*N+col,pos));
+        neighbors.push_back(exchange(status,(row+1)*N+col,pos,len));
         //left
-        neighbors.push_back(exchange(status,row*N+col-1,pos));
+        neighbors.push_back(exchange(status,row*N+col-1,pos,len));
         //right
-        neighbors.push_back(exchange(status,row*N+col+1,pos));
+        neighbors.push_back(exchange(status,row*N+col+1,pos,len));
     }
     else if(row == len/N -1 && col > 0 && col < N-1){
         //up
-        neighbors.push_back(exchange(status,(row-1)*N+col,pos));
+        neighbors.push_back(exchange(status,(row-1)*N+col,pos,len));
         //left
-        neighbors.push_back(exchange(status,row*N+col-1,pos));
+        neighbors.push_back(exchange(status,row*N+col-1,pos,len));
         //right
-        neighbors.push_back(exchange(status,row*N+col+1,pos));
+        neighbors.push_back(exchange(status,row*N+col+1,pos,len));
     }
     else if(row > 0 && row < len/N -1 && col ==0){
         //up
-        neighbors.push_back(exchange(status,(row-1)*N+col,pos));
+        neighbors.push_back(exchange(status,(row-1)*N+col,pos,len));
         //down
-        neighbors.push_back(exchange(status,(row+1)*N+col,pos));
+        neighbors.push_back(exchange(status,(row+1)*N+col,pos,len));
         //right
-        neighbors.push_back(exchange(status,row*N+col+1,pos));
+        neighbors.push_back(exchange(status,row*N+col+1,pos,len));
     }
     else if(row > 0 && row < len/N -1 && col == N-1){
         //up
-        neighbors.push_back(exchange(status,(row-1)*N+col,pos));
+        neighbors.push_back(exchange(status,(row-1)*N+col,pos,len));
         //left
-        neighbors.push_back(exchange(status,row*N+col-1,pos));
+        neighbors.push_back(exchange(status,row*N+col-1,pos,len));
         //down
-        neighbors.push_back(exchange(status,(row+1)*N+col,pos));
+        neighbors.push_back(exchange(status,(row+1)*N+col,pos,len));
     }
 
     return neighbors;
@@ -192,22 +198,32 @@ vector<QString> findNeighbors(QString status, unsigned int len,unsigned int N){
 
 }
 
-QString exchange(QString str,unsigned int x,unsigned int y){
-    QString tmp;
+DYNAMICSTR exchange(DYNAMICSTR str,unsigned int x,unsigned int y,unsigned int len){
+    DYNAMICSTR tmp;
 
-    tmp = str.mid(x,1);
-    str.replace(x,1,str.mid(y,1));
-    str.replace(y,1,tmp);
-    str.mid(y,1) = tmp;
+    for(unsigned int i= 0; i < len; i++){
+        if(i==x){
+            tmp.value += QString::number(readDynamicStrValue(str,y));
+            tmp.lenDescription += QString::number(QString::number(readDynamicStrValue(str,y)).length());
+        }
+        else if(i == y){
+            tmp.value += QString::number(readDynamicStrValue(str,x));
+            tmp.lenDescription += QString::number(QString::number(readDynamicStrValue(str,x)).length());
+        }
+        else{
+            tmp.value += QString::number(readDynamicStrValue(str,i));
+            tmp.lenDescription += QString::number(QString::number(readDynamicStrValue(str,i)).length());
+        }
+    }
 
-    return str;
+    return tmp;
 
 }
 
-bool isInList(QString str,vector<NODE> list){
+bool isInList(DYNAMICSTR str,vector<NODE> list){
     bool flag = false;
     for(unsigned int i=0; i < list.size();i++){
-        if(str==list[i].key){
+        if(str.value==list[i].key.value){
             flag = true;
             break;
             }
@@ -221,9 +237,29 @@ void nodeDeepCopy(NODE* dst,NODE* src){
     dst->estimateCost = src->estimateCost;
     dst->knownCost = src->knownCost;
     dst->key = src->key;
-    for(unsigned int i= 0; i < src->path.size();i++){
+    dst->path.clear();
+    for(unsigned int i= 0; i < src->path.size();i++){      
         dst->path.push_back(src->path[i]);
+        //dynamicStrDeepCopy(,&src->path[i]);
 
     }
 }
 
+void dynamicStrDeepCopy(DYNAMICSTR* dst,DYNAMICSTR* src){
+    dst->value = src->value;
+    dst->lenDescription = src->lenDescription;
+
+}
+
+
+unsigned int readDynamicStrValue(DYNAMICSTR status,unsigned int readPos){
+
+    unsigned int start = 0;
+
+    for(unsigned int i = 0; i < readPos;i++){
+        start +=  status.lenDescription.mid(i,1).toInt();
+    }
+
+    return status.value.mid(start,status.lenDescription.mid(readPos,1).toInt()).toInt();
+
+}

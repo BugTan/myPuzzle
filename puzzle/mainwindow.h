@@ -4,7 +4,7 @@
 #include<QTimer>
 #include <QString>
 #include <QMainWindow>
-#define MAXROW 10
+#define MAXROW 9
 #define MAXSAVEPROCESS 10
 
 namespace Ui{
@@ -15,6 +15,8 @@ typedef struct{
     QString saveName;
     unsigned int array[MAXROW*MAXROW];
 }SaveArray;
+
+
 
 class MainWindow : public QMainWindow
 {
@@ -41,7 +43,7 @@ private slots:
     void on_setDiffBtn_clicked();
     //whether can solved
     bool isSolvable();
-    void delaymsec(int msec);
+
     void delay(unsigned int n);
 private:
     Ui::MainWindow *ui;

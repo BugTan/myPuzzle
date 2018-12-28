@@ -160,19 +160,21 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
 
         //demonstrate the game
         case Qt::Key_F:{
-            QString status;
+            //QString status,lenDescription;
+            DYNAMICSTR status;
             for(unsigned int i= 0; i < totalPatch; i++){
-                status += QString::number(pCompare[i/N][i%N]);
+                status.value += QString::number(pCompare[i/N][i%N]);
+                status.lenDescription += QString::number(QString::number(pCompare[i/N][i%N]).length());
             }
-            vector<QString> path = A_star(status,totalPatch,N);
+            vector<DYNAMICSTR> path = A_star(status,totalPatch,N);
 //            vector<QString> path;
 //            path.push_back("1302");
 //            path.push_back("3102");
 //            path.push_back("0132");
 //            path.push_back("0123");
             for(unsigned int i= 0; i < path.size(); i++){
-                for(int j =0; j< path[i].length();j++){
-                    pCompare[j/N][j%N] = path[i].mid(j,1).toInt();
+                for(unsigned int j =0; j< totalPatch;j++){
+                    pCompare[j/N][j%N] = readDynamicStrValue(path[i],j);
                 }
                 moveImage();
                 delay(1);
@@ -431,14 +433,6 @@ bool MainWindow::isSolvable()
     return Curflag % 2 == flag;
 }
 
-void MainWindow::delaymsec(int msec){
-    QTime n=QTime::currentTime();
-    QTime now;
-
-    do{
-      now=QTime::currentTime();
-    }while (n.msecsTo(now)<=msec);
-}
 
 void MainWindow::delay(unsigned int n){
     QTime dieTime= QTime::currentTime().addSecs(n);
