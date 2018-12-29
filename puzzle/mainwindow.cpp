@@ -177,7 +177,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
                     pCompare[j/N][j%N] = readDynamicStrValue(path[i],j);
                 }
                 moveImage();
-                delay(1);
+                delay(300);
             }
         }break;
 
@@ -435,7 +435,7 @@ bool MainWindow::isSolvable()
 
 
 void MainWindow::delay(unsigned int n){
-    QTime dieTime= QTime::currentTime().addSecs(n);
+    QTime dieTime= QTime::currentTime().addMSecs(n);
     while (QTime::currentTime() < dieTime)
         QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
 }

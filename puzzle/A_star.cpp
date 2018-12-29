@@ -1,6 +1,9 @@
 #include "A_star.h"
 #define INF 999999999
 
+#include <iostream>
+#include <queue>
+
 vector<DYNAMICSTR> A_star(DYNAMICSTR startStatus,unsigned int len,unsigned int N){
 
     DYNAMICSTR targetStatus;
@@ -24,10 +27,14 @@ vector<DYNAMICSTR> A_star(DYNAMICSTR startStatus,unsigned int len,unsigned int N
 
     openList.push_back(startPoint);
 
+    //unsigned int cur=0;
+    unsigned int times=0;
+
     do{
+        times++;
         //find the node with min F value in openlist
         int FValue = INF,tmp;
-        int cur=0;
+        unsigned int cur=0;
         for(unsigned int i=0; i < openList.size();i++){
              tmp = openList[i].estimateCost+openList[i].knownCost;
              if(FValue > tmp){
@@ -35,6 +42,8 @@ vector<DYNAMICSTR> A_star(DYNAMICSTR startStatus,unsigned int len,unsigned int N
                  cur = i;
              }
         }
+        cout<<"serch time:"<<times<<" openList size:"<<openList.size()<<" closeList size:"<<closeList.size()<<
+           " Path size:"<<openList[cur].path.size()<<endl;
 
         //remove current node and put it in closed list
         closeList.push_back(openList[cur]);
@@ -42,31 +51,29 @@ vector<DYNAMICSTR> A_star(DYNAMICSTR startStatus,unsigned int len,unsigned int N
         nodeDeepCopy(&curNode,&openList[cur]);
         //memcpy(&curNode, &openList[cur], sizeof(NODE));//deep copy就用这么一句就搞定了，呵呵
         openList.erase(openList.begin()+cur);
+        cout<<"openList size erased:"<<openList.size()<<endl;
 
         //find neighbor
         vector<DYNAMICSTR> neighborStr = findNeighbors(curNode.key,len, N);
 
         for(unsigned int i=0; i < neighborStr.size();i++){
-            if(isInList(neighborStr[i],closeList))
+            if(isInList(neighborStr[i],closeList).flag)
                 continue;
-            if(isInList(neighborStr[i],openList)){
-                unsigned int inx;
-                for(inx=0; inx < openList.size();inx++){
-                    if(neighborStr[i].value==openList[inx].key.value)
-                        break;
-                }
+            RETURNFLAG flag = isInList(neighborStr[i],openList);
+//            if(flag.flag){
 
-                //current known path is short, so change previous path
-                if(openList[inx].knownCost > curNode.knownCost){
-                    openList[inx].path.clear();
-                    openList[inx].path.assign(curNode.path.begin(), curNode.path.end());
-                    openList[inx].path.push_back(neighborStr[i]);
-                    openList[inx].estimateCost = computeManhattanDistance(openList[inx].key,N,len);
-                    openList[inx].knownCost = curNode.knownCost + 1;
+//                //current known path is short, so change previous path
+//                if(openList[flag.pos].knownCost > curNode.knownCost +1){
+//                    openList[flag.pos].path.clear();
+//                    openList[flag.pos].path.assign(curNode.path.begin(), curNode.path.end());
+//                    openList[flag.pos].path.push_back(neighborStr[i]);
+//                    openList[flag.pos].estimateCost = computeManhattanDistance(openList[flag.pos].key,N,len);
+//                    openList[flag.pos].knownCost = curNode.knownCost + 1;
 
-                }
-            }
-            if(!isInList(neighborStr[i],openList)){
+//                }
+//                break;
+//            }
+            if(!flag.flag){
                 NODE neighborNode;
                 //neighborNode.key = neighborStr[i];
                 dynamicStrDeepCopy(&neighborNode.key,&neighborStr[i]);
@@ -76,16 +83,18 @@ vector<DYNAMICSTR> A_star(DYNAMICSTR startStatus,unsigned int len,unsigned int N
                 neighborNode.estimateCost = computeManhattanDistance(neighborStr[i],N,len);
                 neighborNode.knownCost = curNode.knownCost + 1 ;
                 openList.push_back(neighborNode);
+
             }
 
         }
 
-    }while(!isInList(targetStatus,openList));
+    }while(!isInList(targetStatus,openList).flag);
     unsigned int i;
     for(i=0; i < openList.size();i++){
-        if(targetStatus.value==openList[i].key.value)
+        if(targetStatus==openList[i].key)
             break;
     }
+   // targetStatus==openList[i].key;
 
     return openList[i].path;
 }
@@ -94,7 +103,7 @@ unsigned int computeManhattanDistance(DYNAMICSTR startStatus,unsigned int N,unsi
 
     unsigned int estimateCost = 0;
     for(unsigned int i = 0;i < len;i++){
-        if(readDynamicStrValue(startStatus,i) == QString::number(len - 1) )
+        if(readDynamicStrValue(startStatus,i) == len - 1 )
             continue;
         estimateCost += abs(int(readDynamicStrValue(startStatus,i)/N - i/N))
                 +abs(int(readDynamicStrValue(startStatus,i)%N - i%N));
@@ -110,7 +119,7 @@ vector<DYNAMICSTR> findNeighbors(DYNAMICSTR status, unsigned int len,unsigned in
   //  unsigned int pos = status.indexOf(QString::number(len-1));
     unsigned int i;
     for(i=0; i < len;i++ ){
-        if(QString::number(readDynamicStrValue(status,i)) == QString::number(len-1))
+        if(readDynamicStrValue(status,i) == len-1)
             break;
     }
     unsigned int pos = i;
@@ -220,18 +229,20 @@ DYNAMICSTR exchange(DYNAMICSTR str,unsigned int x,unsigned int y,unsigned int le
 
 }
 
-bool isInList(DYNAMICSTR str,vector<NODE> list){
-    bool flag = false;
-    for(unsigned int i=0; i < list.size();i++){
-        if(str.value==list[i].key.value){
-            flag = true;
+RETURNFLAG isInList(DYNAMICSTR str,vector<NODE> list){
+    RETURNFLAG flag;
+    flag.flag = false;
+    unsigned int i;
+    for(i=0; i < list.size();i++){
+        if(str==list[i].key){
+            flag.flag = true;
             break;
             }
     }
+    flag.pos = i;
     return flag;
-
-
 }
+
 
 void nodeDeepCopy(NODE* dst,NODE* src){
     dst->estimateCost = src->estimateCost;
