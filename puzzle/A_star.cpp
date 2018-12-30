@@ -4,20 +4,20 @@
 //#include <iostream>
 //#include <queue>
 
-bool ascendSort(NODE a,NODE b){
-    return (a.estimateCost + a.knownCost < b.estimateCost +b.knownCost);
-}
-template<typename T> vector<T> vectorPush(vector<T> vec, T TObject){
-    vec.push_back(TObject);
-    sort(vec.begin(),vec.end(),ascendSort);
-    return vec;
-}
+//bool ascendSort(NODE a,NODE b){
+//    return (a.estimateCost + a.knownCost < b.estimateCost +b.knownCost);
+//}
+//template<typename T> vector<T> vectorPush(vector<T> vec, T TObject){
+//    vec.push_back(TObject);
+//    sort(vec.begin(),vec.end(),ascendSort);
+//    return vec;
+//}
 
-template<typename T> vector<T> vectorErase(vector<T> vec, unsigned int pos){
-    vec.erase(vec.begin()+pos);
-    sort(vec.begin(),vec.end(),ascendSort);
-    return vec;
-}
+//template<typename T> vector<T> vectorErase(vector<T> vec, unsigned int pos){
+//    vec.erase(vec.begin()+pos);
+//    sort(vec.begin(),vec.end(),ascendSort);
+//    return vec;
+//}
 
 vector<DYNAMICSTR> A_star(DYNAMICSTR startStatus,unsigned int len,unsigned int N){
 
@@ -40,8 +40,8 @@ vector<DYNAMICSTR> A_star(DYNAMICSTR startStatus,unsigned int len,unsigned int N
     //startPoint.key = startStatus;
     dynamicStrDeepCopy(&startPoint.key,&startStatus);
 
-    //openList.push_back(startPoint);
-    openList = vectorPush(openList,startPoint);
+    openList.push_back(startPoint);
+    //openList = vectorPush(openList,startPoint);
 
     //unsigned int cur=0;
     //unsigned int times=0;
@@ -49,27 +49,26 @@ vector<DYNAMICSTR> A_star(DYNAMICSTR startStatus,unsigned int len,unsigned int N
     do{
         //times++;
         //find the node with min F value in openlist
-//        int FValue = INF,tmp;
+        int FValue = INF,tmp;
         unsigned int cur=0;
-//        for(unsigned int i=0; i < openList.size();i++){
-//             tmp = openList[i].estimateCost+openList[i].knownCost;
-//             if(FValue > tmp){
-//                 FValue = tmp;
-//                 cur = i;
-//             }
-//        }
+        for(unsigned int i=0; i < openList.size();i++){
+             tmp = openList[i].estimateCost+openList[i].knownCost;
+             if(FValue > tmp){
+                 FValue = tmp;
+                 cur = i;
+             }
+        }
         //cout<<"serch time:"<<times<<" openList size:"<<openList.size()<<" closeList size:"<<closeList.size()<<
         //   " Path size:"<<openList[cur].path.size()<<endl;
 
         //remove current node and put it in closed list
         closeList.push_back(openList[cur]);
-        //vectorPush(closeList,openList[cur]);
 
         NODE curNode;
         nodeDeepCopy(&curNode,&openList[cur]);
         //memcpy(&curNode, &openList[cur], sizeof(NODE));//deep copy就用这么一句就搞定了，呵呵
-        //openList.erase(openList.begin()+cur);
-        openList = vectorErase(openList,cur);
+        openList.erase(openList.begin()+cur);
+        //openList = vectorErase(openList,cur);
         //cout<<"openList size erased:"<<openList.size()<<endl;
 
         //find neighbor
@@ -101,8 +100,8 @@ vector<DYNAMICSTR> A_star(DYNAMICSTR startStatus,unsigned int len,unsigned int N
                 neighborNode.path.push_back(neighborStr[i]);
                 neighborNode.estimateCost = computeManhattanDistance(neighborStr[i],N,len);
                 neighborNode.knownCost = curNode.knownCost + 1 ;
-                //openList.push_back(neighborNode);
-                openList = vectorPush(openList,neighborNode);
+                openList.push_back(neighborNode);
+                //openList = vectorPush(openList,neighborNode);
 
             }
 
