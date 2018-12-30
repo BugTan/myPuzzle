@@ -53,6 +53,8 @@ typedef struct Node{
 
 }NODE;
 
+
+
 vector<DYNAMICSTR> A_star(DYNAMICSTR startStatus,unsigned int len,unsigned int N);
 unsigned int computeManhattanDistance(DYNAMICSTR startStatus,unsigned int N,unsigned int len);
 DYNAMICSTR exchange(DYNAMICSTR str,unsigned int x,unsigned int y,unsigned int len);
@@ -61,6 +63,8 @@ vector<DYNAMICSTR> findNeighbors(DYNAMICSTR status, unsigned int len,unsigned in
 void nodeDeepCopy(NODE* dst,NODE* src);
 void dynamicStrDeepCopy(DYNAMICSTR* dst,DYNAMICSTR* src);
 unsigned int readDynamicStrValue(DYNAMICSTR status,unsigned int readPos);
+
+
 
 
 #endif // A_STAR_H
