@@ -40,7 +40,7 @@ private slots:
     //timer
     void seconds();
 
-    void on_setDiffBtn_clicked();
+    void on_Start_clicked();
     //whether can solved
     bool isSolvable();
 

@@ -314,7 +314,7 @@ void MainWindow::on_loadImgBtn_clicked(){
 
 
 //set difficulty
-void MainWindow::on_setDiffBtn_clicked(){
+void MainWindow::on_Start_clicked(){
 
     if(sourceImage == NULL)
         return;

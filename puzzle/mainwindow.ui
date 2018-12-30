@@ -141,7 +141,7 @@ font: 14pt &quot;Ubuntu&quot;;</string>
      <string>N</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="setDiffBtn">
+   <widget class="QPushButton" name="Start">
     <property name="geometry">
      <rect>
       <x>990</x>
