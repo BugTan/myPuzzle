@@ -166,7 +166,8 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
                 status.value += QString::number(pCompare[i/N][i%N]);
                 status.lenDescription += QString::number(QString::number(pCompare[i/N][i%N]).length());
             }
-            vector<DYNAMICSTR> path = A_star(status,totalPatch,N);
+            vector<DYNAMICSTR> path;
+            A_star(path,status,totalPatch,N);
 //            vector<QString> path;
 //            path.push_back("1302");
 //            path.push_back("3102");
@@ -187,9 +188,12 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
             QImage *saveImg = new QImage(N*SMALL_W,M*SMALL_H,QImage::Format_RGB32);
             QPainter painter(saveImg);
             for(unsigned int i=0; i<totalPatch;i++){
-                painter.drawPixmap(i%N*SMALL_W,i/N*SMALL_H,pImage[pCompare[i/N][i%N]].width(),
-                                   pImage[pCompare[i/N][i%N]].height(),QPixmap::fromImage(pImage[pCompare[i/N][i%N]]));
-
+                if(pCompare[i/N][i%N] == totalPatch-1)
+                    painter.drawPixmap(i%N*SMALL_W,i/N*SMALL_H,SMALL_W,SMALL_H,
+                                       QPixmap(":/blank.jpg"));
+                else
+                    painter.drawPixmap(i%N*SMALL_W,i/N*SMALL_H,SMALL_W,SMALL_H,
+                                   QPixmap::fromImage(pImage[pCompare[i/N][i%N]]));
             }
 
 
@@ -202,6 +206,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
                   msgBox.setText("The image has been saved!");
                   msgBox.exec();
             }
+            //delete saveImg;
 
         }break;
 
@@ -337,28 +342,6 @@ void MainWindow::on_setDiffBtn_clicked(){
         }
         dFlag = true;
 
-        //get target ji ou xing
-        //get Reverse order number
-        int inv = 0;
-        for (unsigned int i = 1; i < totalPatch; i++){
-            for (unsigned int j = 0; j < i; j++){
-                if (pCompare[i/N][i%N] < pCompare[j/N][j%N]){
-                    inv++;
-                }
-            }
-        }
-
-        int row = 0;
-        int col = 0;
-        for(unsigned int j=0;j < totalPatch; j++){
-            if( pCompare[j/N][j%N] == totalPatch-1){
-                row = j/N;
-                col = j%N;
-                break;
-            }
-        }
-        flag = (inv + row + col)%2;
-
         cutImage();
         random();
 
@@ -410,6 +393,8 @@ void MainWindow::on_setDiffBtn_clicked(){
 
 bool MainWindow::isSolvable()
 {
+    //target flag
+    int flag = (0+(totalPatch-1)/N+(totalPatch-1)%N)%2;
     //get Reverse order number
     int inv = 0;
     for (unsigned int i = 1; i < totalPatch; i++){

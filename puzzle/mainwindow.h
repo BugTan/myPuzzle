@@ -70,7 +70,8 @@ private:
 
     bool dFlag = false;
 
-    int flag;
+    //is solvable flag
+    //int flag;
     //宫格Label
     //QLabel* plbImage;
 

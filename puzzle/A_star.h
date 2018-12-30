@@ -55,14 +55,14 @@ typedef struct Node{
 
 
 
-vector<DYNAMICSTR> A_star(DYNAMICSTR startStatus,unsigned int len,unsigned int N);
-unsigned int computeManhattanDistance(DYNAMICSTR startStatus,unsigned int N,unsigned int len);
+int A_star(vector<DYNAMICSTR>& path,DYNAMICSTR& startStatus,unsigned int len,unsigned int N);
+unsigned int computeManhattanDistance(DYNAMICSTR& startStatus,unsigned int N,unsigned int len);
 DYNAMICSTR exchange(DYNAMICSTR str,unsigned int x,unsigned int y,unsigned int len);
-RETURNFLAG isInList(DYNAMICSTR str,vector<NODE> list);
-vector<DYNAMICSTR> findNeighbors(DYNAMICSTR status, unsigned int len,unsigned int N);
+RETURNFLAG isInList(DYNAMICSTR& str,vector<NODE>& list);
+int findNeighbors(vector<DYNAMICSTR>& neighbors,DYNAMICSTR& status, unsigned int len,unsigned int N);
 void nodeDeepCopy(NODE* dst,NODE* src);
 void dynamicStrDeepCopy(DYNAMICSTR* dst,DYNAMICSTR* src);
-unsigned int readDynamicStrValue(DYNAMICSTR status,unsigned int readPos);
+unsigned int readDynamicStrValue(DYNAMICSTR& status,unsigned int readPos);
 
 
 

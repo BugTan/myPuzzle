@@ -19,7 +19,7 @@
 //    return vec;
 //}
 
-vector<DYNAMICSTR> A_star(DYNAMICSTR startStatus,unsigned int len,unsigned int N){
+int A_star(vector<DYNAMICSTR>& path,DYNAMICSTR& startStatus,unsigned int len,unsigned int N){
 
     DYNAMICSTR targetStatus;
    // vector<QString> path;
@@ -72,7 +72,8 @@ vector<DYNAMICSTR> A_star(DYNAMICSTR startStatus,unsigned int len,unsigned int N
         //cout<<"openList size erased:"<<openList.size()<<endl;
 
         //find neighbor
-        vector<DYNAMICSTR> neighborStr = findNeighbors(curNode.key,len, N);
+        vector<DYNAMICSTR> neighborStr;
+        findNeighbors(neighborStr,curNode.key,len, N);
 
         for(unsigned int i=0; i < neighborStr.size();i++){
             if(isInList(neighborStr[i],closeList).flag)
@@ -115,10 +116,11 @@ vector<DYNAMICSTR> A_star(DYNAMICSTR startStatus,unsigned int len,unsigned int N
     }
    // targetStatus==openList[i].key;
 
-    return openList[i].path;
+    path = openList[i].path;
+    return 0;
 }
 
-unsigned int computeManhattanDistance(DYNAMICSTR startStatus,unsigned int N,unsigned int len){
+unsigned int computeManhattanDistance(DYNAMICSTR& startStatus,unsigned int N,unsigned int len){
 
     unsigned int estimateCost = 0;
     for(unsigned int i = 0;i < len;i++){
@@ -132,8 +134,8 @@ unsigned int computeManhattanDistance(DYNAMICSTR startStatus,unsigned int N,unsi
 
 }
 
-vector<DYNAMICSTR> findNeighbors(DYNAMICSTR status, unsigned int len,unsigned int N){
-    vector<DYNAMICSTR> neighbors;
+int findNeighbors(vector<DYNAMICSTR>& neighbors,DYNAMICSTR& status, unsigned int len,unsigned int N){
+
 
   //  unsigned int pos = status.indexOf(QString::number(len-1));
     unsigned int i;
@@ -221,7 +223,7 @@ vector<DYNAMICSTR> findNeighbors(DYNAMICSTR status, unsigned int len,unsigned in
         neighbors.push_back(exchange(status,(row+1)*N+col,pos,len));
     }
 
-    return neighbors;
+    return 0;
 
 
 }
@@ -248,7 +250,7 @@ DYNAMICSTR exchange(DYNAMICSTR str,unsigned int x,unsigned int y,unsigned int le
 
 }
 
-RETURNFLAG isInList(DYNAMICSTR str,vector<NODE> list){
+RETURNFLAG isInList(DYNAMICSTR &str,vector<NODE>& list){
     RETURNFLAG flag;
     flag.flag = false;
     unsigned int i;
@@ -282,7 +284,7 @@ void dynamicStrDeepCopy(DYNAMICSTR* dst,DYNAMICSTR* src){
 }
 
 
-unsigned int readDynamicStrValue(DYNAMICSTR status,unsigned int readPos){
+unsigned int readDynamicStrValue(DYNAMICSTR& status,unsigned int readPos){
 
     unsigned int start = 0;
 
